@@ -1,0 +1,242 @@
+## Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+#-----------------------------------------------------------------------
+#
+#      NAME:
+#          KcsSplitPanOptions.py
+#
+#      PURPOSE:
+#          The class holds information about a Split Panel Options
+#
+#          Do NOT change the names of the attributes, they are used by
+#          the Vitesse interface. Users may only add or change methods
+#
+#      ATTRIBUTES
+#-----------------------------------------------------------------------
+
+import types
+import KcsPlane3D
+
+class SplitPanOptions(object):
+   'class holds information about Split Panel Options'
+
+   __ErrorMessages = { TypeError : 'not supported argument type, see documentation of SplitPanOptions class',
+                       IndexError: 'not supported index value, see documentation of SplitPanOptions class',
+                       ValueError: 'not supported value, see documentation of SplitPanOptions class' }
+#-----------------------------------------------------------------------
+#
+#      METHOD:
+#          __init__
+#
+#      PURPOSE:
+#          To create an instance of the class
+#
+#      INPUT:
+#          Parameters:
+#
+#-----------------------------------------------------------------------
+
+   def __init__(self):
+      'to create instance of the class'
+
+      self.__Plane3D         = None
+      self.__PanelMapping = []
+
+#-----------------------------------------------------------------------
+#
+#      METHOD:
+#          __repr__
+#
+#      PURPOSE:
+#          To print the class
+#
+#-----------------------------------------------------------------------
+
+   def __repr__(self):
+      'returns string representation of SplitPanOptions object'
+
+      if self.__Plane3D==None:
+         plane3dstr = '   Cutting plane: Empty'
+      else:
+         plane3dstr = '   Cutting plane: ' + str(self.__Plane3D)
+
+      if len(self.__PanelMapping)==0:
+         panelmappingstr = '   Panel mapping settings: Empty' + '\n'
+      else:
+         panelmappingstr = '   Panel mapping settings: ' + str(len(self.__PanelMapping)) + ' data dictionaries for panels after split'
+         for i in range(len(self.__PanelMapping)):
+            panelmappingstr += '\n    '+str(i) +' Name: ' + str(self.__PanelMapping[i]['Name'])
+            panelmappingstr += ' Block: ' + str(self.__PanelMapping[i]['Block'])
+            panelmappingstr += ' Symmetry code: ' + str(self.__PanelMapping[i]['SymmetryCode'])
+
+      return 'SplitPanOptions:' + '\n' + plane3dstr +  '\n' + panelmappingstr
+
+#-----------------------------------------------------------------------
+#
+#      METHOD:
+#           SetCuttingPlane
+#
+#      PURPOSE:
+#          Sets Cutting Plane
+#-----------------------------------------------------------------------
+
+   def SetCuttingPlane(self, Plane3D):
+      'sets CuttingPlane'
+      if Plane3D!=None and not isinstance(Plane3D, KcsPlane3D.Plane3D):
+         raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+      self.__Plane3D    = Plane3D
+      return 1
+
+#-----------------------------------------------------------------------
+
+   def GetCuttingPlane(self):
+      'sets CuttingPlane'
+      return   self.__Plane3D
+
+#-----------------------------------------------------------------------
+#
+#      METHOD:
+#           AddPanelMapping
+#
+#      PURPOSE:
+#          Adds Panel Mapping for panel after split operation
+#-----------------------------------------------------------------------
+
+   def AddPanelMapping(self, name, block = '', symmetryCode = ''):
+      'adds panel attributes after split operation: name, block name, symmetry code (project name)'
+      if type(name) != types.StringType or type(block) != types.StringType or  type(symmetryCode) != types.StringType:
+         raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+      else:
+         if symmetryCode != 'SP' and symmetryCode != 'SBPS' and symmetryCode != 'S' and symmetryCode != 'P' and symmetryCode != '':
+            raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+         if self.__PanelMapping==None:
+            self.__PanelMapping = []
+         self.__PanelMapping.append( {'Name':name,'Block':block,'SymmetryCode':symmetryCode} )
+      return 1
+
+#-----------------------------------------------------------------------
+
+   def GetPanelMapping(self):
+      return self.__PanelMapping
+
+#-----------------------------------------------------------------------
+#
+#     New style starting in Python 2.2
+#
+#-----------------------------------------------------------------------
+
+   Plane3D = property(GetCuttingPlane, SetCuttingPlane, None, "'Plane3D' property - defines cutting plane")
+
+   def setPanelMapping(self, value): self.__PanelMapping = value
+   PanelMapping = property(GetPanelMapping, setPanelMapping, None, "'PanelMapping' property - attributes of panels generated by split operation")
+
+#----------------------------obsolete methods---------------------------
+#-----------------------------------------------------------------------
+#
+#      METHOD:
+#           SetNameMapping
+#
+#      PURPOSE:
+#          Sets Name Mapping
+#          Obsolete
+#-----------------------------------------------------------------------
+
+   def SetNameMapping(self, dict):
+      'sets Dictionary Arguments'
+      'obsolete, use AddPanelMapping'
+      if type(dict) != types.DictionaryType or len(dict)==0:
+         raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+      else:
+         for i in range(len(self.__PanelMapping),2):
+            self.__PanelMapping.append({'Name':'','Block':'','SymmetryCode':''})
+         firstkey = dict.keys()[0]
+         if type(dict[firstkey]) != types.ListType or len(dict[firstkey])<2 \
+            or type(dict[firstkey][0]) != types.StringType or type(dict[firstkey][1]) != types.StringType:
+             raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+         self.__PanelMapping[0]['Name'] = dict[firstkey][0]
+         self.__PanelMapping[1]['Name'] = dict[firstkey][1]
+      return 1
+
+#-----------------------------------------------------------------------
+
+   def GetNameMapping(self):
+      'gets Name Pairs'
+      'obsolete'
+      if len(self.__PanelMapping)>1:
+         dict = {'':[self.__PanelMapping[0]['Name'], self.__PanelMapping[1]['Name']]}
+         return  dict
+      else:
+         return None
+
+#-----------------------------------------------------------------------
+#
+#      METHOD:
+#           SetBlockMapping
+#
+#      PURPOSE:
+#          Sets Block Mapping
+#          Obsolete
+#-----------------------------------------------------------------------
+
+   def SetBlockMapping(self, dict):
+      'sets Dictionary Arguments'
+      'obsolete, use AddPanelMapping'
+      if type(dict) != types.DictionaryType or len(dict)==0:
+         raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+      else:
+         for i in range(len(self.__PanelMapping),2):
+            self.__PanelMapping.append({'Name':'','Block':'','SymmetryCode':''})
+         firstkey = dict.keys()[0]
+         if type(firstkey) != types.StringType or type(dict[firstkey]) != types.StringType:
+             raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+         self.__PanelMapping[0]['Block'] = firstkey
+         self.__PanelMapping[1]['Block'] = dict[firstkey]
+      return 1
+
+#-----------------------------------------------------------------------
+   def GetBlockMapping(self):
+      'gets Block Name Pairs'
+      'obsolete'
+      if len(self.__PanelMapping)>1:
+         dict = {self.__PanelMapping[0]['Block']: self.__PanelMapping[1]['Block']}
+         return  dict
+      else:
+         return None
+
+#-----------------------------------------------------------------------
+#
+#      METHOD:
+#           SetValids
+#
+#      PURPOSE:
+#          Sets Project
+#          Obsolete
+#-----------------------------------------------------------------------
+
+   def SetValids(self, dict):
+      'sets Dictionary Arguments'
+      'obsolete, use AddPanelMapping'
+      if type(dict) != types.DictionaryType or len(dict)==0:
+         raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+      else:
+         for i in range(len(self.__PanelMapping),2):
+            self.__PanelMapping.append({'Name':'','Block':'','SymmetryCode':''})
+         item = dict.keys()[0]
+         if dict[item] != 'SP' and dict[item] != 'SBPS' and dict[item] != 'S' and dict[item] != 'P' and dict[item] != '':
+            raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+         if item != 'SP' and item != 'SBPS' and item != 'S' and item != 'P' and item != '':
+            raise TypeError, SplitPanOptions.__ErrorMessages[TypeError]
+         self.__PanelMapping[0]['SymmetryCode'] = item
+         self.__PanelMapping[1]['SymmetryCode'] = dict[item]
+      return 1
+
+#-----------------------------------------------------------------------
+
+   def GetValids(self):
+      'gets Valids Dictonary'
+      'obsolete'
+      if len(self.__PanelMapping)>1:
+         dict = {self.__PanelMapping[0]['SymmetryCode']: self.__PanelMapping[1]['SymmetryCode']}
+         return  dict
+      else:
+         return None
+
